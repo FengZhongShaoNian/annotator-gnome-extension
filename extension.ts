@@ -17,9 +17,8 @@ export default class AnnotatorGnomeShellExtension extends Extension {
     private keepOnTop: boolean = false;
     private tracker: Shell.WindowTracker | null = null;
     private trackerSignalId: number | null = null;
+    private workspaceManager: Meta.WorkspaceManager | null = null;
     private dashToPanelExtension: Extension | null = null;
-    // 存储已隐藏的 dash-to-panel 图标，以便在禁用时恢复显示
-    private hiddenIcons: Set<any> = new Set();
 
     enable(): void {
         log(`${this.metadata.name} enabling...`);
@@ -41,7 +40,18 @@ export default class AnnotatorGnomeShellExtension extends Extension {
         this.tracker = Shell.WindowTracker.get_default();
         this.trackerSignalId = this.tracker.connect('tracked-windows-changed', () => {
             this._applyKeepOnTop();
-            this._updateDashToPanelIcons();
+            // 延迟一会，等图标出现之后再隐藏才有效
+            setTimeout(()=>{
+                this._updateDashToPanelIcons();
+            }, 500);
+        });
+
+        this.workspaceManager = global.get_workspace_manager();
+        this.workspaceManager.connect('active-workspace-changed', ()=>{
+            // 延迟一会，等图标出现之后再隐藏才有效
+            setTimeout(()=>{
+                this._updateDashToPanelIcons();
+            }, 500);
         });
 
         // 初始应用 keep-on-top
@@ -72,9 +82,6 @@ export default class AnnotatorGnomeShellExtension extends Extension {
             this.tracker = null;
         }
 
-        // 恢复 dash-to-panel 上被隐藏的图标
-        this._restoreDashToPanelIcons();
-        this.hiddenIcons.clear();
         this.dashToPanelExtension = null;
 
         // 清除全局引用
@@ -101,6 +108,8 @@ export default class AnnotatorGnomeShellExtension extends Extension {
         );
     }
 
+    // 目前dash-to-panel不是通过is_skip_taskbar方法来判断是否需要隐藏任务栏的，而是通过skip_taskbar属性来判断的，
+    // 但是目前没有办法修改skip_taskbar属性，先就这样吧
     private _injectSkipTaskbar(): void {
         this.injectionManager = new InjectionManager();
         this.injectionManager.overrideMethod(
@@ -129,6 +138,8 @@ export default class AnnotatorGnomeShellExtension extends Extension {
     }
 
     private _findAnnotatorMetaWindows(): Meta.Window[] {
+        // 文档：https://gjs-docs.gnome.org/meta10~10/meta.windowactor
+        // https://gjs-docs.gnome.org/meta10~10/meta.window
         const actors = global.get_window_actors() || [];
         return actors
             .map(actor => actor.meta_window)
@@ -154,9 +165,6 @@ export default class AnnotatorGnomeShellExtension extends Extension {
     private _updateDashToPanelIcons(): void {
         if (!this.dashToPanelExtension) return;
 
-        // 先恢复之前隐藏的图标，防止重复隐藏或残留
-        this._restoreDashToPanelIcons();
-
         const panels = (this.dashToPanelExtension as any).panels ?? [];
         panels.forEach((panel: any) => {
             this._traverseAndToggleIcon(panel, this.skipTaskbar);
@@ -172,11 +180,9 @@ export default class AnnotatorGnomeShellExtension extends Extension {
             if (child?._labelText === ANNOTATOR_WM_CLASS) {
                 if (hide && child.hide instanceof Function) {
                     child.hide();
-                    this.hiddenIcons.add(child); // 记录已隐藏的图标
-                } else if (!hide && child.show instanceof Function && this.hiddenIcons.has(child)) {
+                } else if (child.show instanceof Function) {
                     // 调用show方法目前好像不起作用，暂时就先这样吧
                     child.show();
-                    this.hiddenIcons.delete(child);
                 }
             } else {
                 this._traverseAndToggleIcon(child, hide);
@@ -184,12 +190,4 @@ export default class AnnotatorGnomeShellExtension extends Extension {
         }
     }
 
-    private _restoreDashToPanelIcons(): void {
-        this.hiddenIcons.forEach(icon => {
-            if (icon?.show instanceof Function) {
-                icon.show();
-            }
-        });
-        this.hiddenIcons.clear();
-    }
 }
