@@ -1,0 +1,27 @@
+{
+  "name": "annotator-gnome-extension",
+  "version": "0.0.1",
+  "description": "Hide Annotator Window Icon and keep the window always on top",
+  "type": "module",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fengzhongshaonian/annotator-gnome-extension.git"
+  },
+  "author": "FengZhongShaoNian <2844126834@qq.com>",
+  "license": "LGPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/fengzhongshaonian/annotator-gnome-extension/issues"
+  },
+  "homepage": "https://github.com/fengzhongshaonian/annotator-gnome-extension#readme",
+  "sideEffects": false,
+  "devDependencies": {
+    "eslint": "^9.33.0",
+    "eslint-plugin-jsdoc": "^54.1.0",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "@girs/gjs": "^4.0.0-beta.34",
+    "@girs/gnome-shell": "^48.0.4"
+  }
+}

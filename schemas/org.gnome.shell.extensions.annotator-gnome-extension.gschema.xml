@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.annotator-gnome-extension" path="/org/gnome/shell/extensions/annotator-gnome-extension/">
+    <key name="skip-taskbar" type="b">
+      <default>true</default>
+      <summary>Hide window icon</summary>
+      <description>If toggled, hides the window icon of annotator from taskbar.</description>
+    </key>
+    <key name="keep-on-top" type="b">
+      <default>true</default>
+      <summary>Hide network icon</summary>
+      <description>If toggled, keeps annotator window always on top.</description>
+    </key>
+  </schema>
+</schemalist>

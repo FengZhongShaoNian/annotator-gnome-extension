@@ -1,0 +1,14 @@
+{
+  "name": "Annotator GNOME support",
+  "description": "Hide Annotator Window Icon and keep the window always on top",
+  "uuid": "annotator-gnome-extension@fengzhongshaonian.github.io",
+  "url": "https://github.com/FengZhongShaoNian/annotator-gnome-extension",
+  "settings-schema": "org.gnome.shell.extensions.annotator-gnome-extension",
+  "shell-version": [
+    "45",
+    "46",
+    "47",
+    "48",
+    "49"
+  ]
+}
